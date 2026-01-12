@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tribunal Ricardo Acosta | Reservas 2026</title>
+    <title>Tribunal Ricardo Acosta | Reservas Mayo-Junio 2026</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         h1 { color: #667eea; font-size: 36px; margin-bottom: 10px; text-align: center; }
         .header-info { text-align: center; color: #666; margin-bottom: 30px; }
-        .month-section { margin: 48px 0; }
+        .month-section { margin: 40px 0; }
         .month-header { color: #667eea; font-size: 28px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #667eea; }
-        .calendar { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-        .day-card { background: #f8f9fa; border-radius: 12px; padding: 15px; border: 2px solid #e9ecef; transition: all 0.3s; }
+        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 10px; }
+        .weekday { text-align: center; font-weight: 600; color: #667eea; padding: 10px; background: #f0f4ff; border-radius: 8px; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day-card { background: #f8f9fa; border-radius: 12px; padding: 15px; border: 2px solid #e9ecef; transition: all 0.3s; min-height: 120px; }
         .day-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #667eea; }
-        .day-date { font-weight: 600; color: #667eea; margin-bottom: 10px; }
-        .day-header { font-size: 18px; font-weight: 600; color: #667eea; margin-bottom: 10px; }
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .day-card.empty { background: transparent; border: none; }
+        .day-number { font-size: 20px; font-weight: 600; color: #667eea; margin-bottom: 8px; }
+        .day-name { font-size: 12px; color: #999; margin-bottom: 10px; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 10px; }
         .available { background: #51cf66; color: white; }
         .reserved { background: #ff6b6b; color: white; }
-        .booking-group { margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; }
+        .booking-info { font-size: 11px; color: #666; margin: 8px 0; }
+        button { background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; width: 100%; }
+        button:hover { background: #5568d3; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
         .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .modal.active { display: block; }
-        .form-group label { display: block; margin-bottom: 5%; font-weight: 600; color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #666; }
         .form-group input { width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; }
-        button { background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
-        button:hover { background: #5568d3; }
         .close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
         .close:hover { color: #333; }
     </style>
@@ -36,7 +39,7 @@
 <body>
     <div class="container">
         <h1>🎓 Tribunal Ricardo Acosta | Reservas 2026</h1>
-        <div class="header-info">Gestión de reservas de clases</div>
+        <div class="header-info">Gestión de reservas - Mayo y Junio 2026</div>
         <div id="calendar-container"></div>
     </div>
 
@@ -64,64 +67,82 @@
         import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBiAXns3syFapx1Hp-f8ka9qB3KRmwAieM",            authDomain: "class-booking-manager.firebaseapp.com",
-                        authDomain: "class-booking-manager.firebaseapp.com",
-            databaseURL: "https://class-booking-manager-default-rtdb.europe-west1.firebaseio.com",            projectId: "class-booking-manager",
-            storageBucket: "class-booking-manager.firebasestorage.app",            messagingSenderId: "123456789012",
+            apiKey: "AIzaSyBiAXns3syFapx1Hp-f8ka9qB3KRmwAieM",
+            authDomain: "class-booking-manager.firebaseapp.com",
+            databaseURL: "https://class-booking-manager-default-rtdb.europe-west1.firebaseio.com",
+            projectId: "class-booking-manager",
+            storageBucket: "class-booking-manager.firebasestorage.app",
+            messagingSenderId: "195223601418",
             appId: "1:195223601418:web:2fe6c567bd30421c763af3",
-                    measurementId: "G-3R8G9PWYC1"};
+            measurementId: "G-3R8G9PWYC1"
+        };
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         let selectedDate = null;
 
+        const weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const months = [
-            { name: 'Enero', days: 31 },
-            { name: 'Febrero', days: 28 },
-            { name: 'Marzo', days: 31 },
-            { name: 'Abril', days: 30 },
-            { name: 'Mayo', days: 31 },
-            { name: 'Junio', days: 30 },
-            { name: 'Julio', days: 31 },
-            { name: 'Agosto', days: 31 },
-            { name: 'Septiembre', days: 30 },
-            { name: 'Octubre', days: 31 },
-            { name: 'Noviembre', days: 30 },
-            { name: 'Diciembre', days: 31 }
+            { name: 'Mayo', month: 5, year: 2026, days: 31 },
+            { name: 'Junio', month: 6, year: 2026, days: 30 }
         ];
 
-        function generateCalendars() {
+        function getDayOfWeek(year, month, day) {
+            return new Date(year, month - 1, day).getDay();
+        }
+
+        function generateCalendar(monthData) {
             const container = document.getElementById('calendar-container');
-            container.innerHTML = '';
-
-            months.forEach((month, monthIndex) => {
-                const section = document.createElement('div');
-                section.className = 'month-section';
-                section.innerHTML = `<h2 class="month-header">${month.name} 2026</h2><div class="calendar" id="month-${monthIndex}"></div>`;
-                container.appendChild(section);
-
-                const calendar = document.getElementById(`month-${monthIndex}`);
-                for (let day = 1; day <= month.days; day++) {
-                    const dateKey = `2026-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const card = document.createElement('div');
-                    card.className = 'day-card';
-                    card.id = `day-${dateKey}`;
-                    card.innerHTML = `
-                        <div class="day-header">Día ${day}</div>
-                        <div class="status-badge available">Disponible</div>
-                        <div class="booking-info" style="margin-top:10px; font-size:12px; color:#666;"></div>
-                        <button onclick="openBookingModal('${dateKey}')">Reservar</button>
-                    `;
-                    calendar.appendChild(card);
-
-                    // Escuchar cambios en tiempo real
-                    const bookingRef = ref(database, 'bookings/' + dateKey);
-                    onValue(bookingRef, (snapshot) => {
-                        const data = snapshot.val();
-                        updateDayCard(dateKey, data);
-                    });
-                }
+            const section = document.createElement('div');
+            section.className = 'month-section';
+            
+            let html = `<h2 class="month-header">${monthData.name} ${monthData.year}</h2>`;
+            
+            // Añadir días de la semana
+            html += '<div class="weekdays">';
+            weekDays.forEach(day => {
+                html += `<div class="weekday">${day}</div>`;
             });
+            html += '</div>';
+            
+            html += '<div class="calendar">';
+            
+            // Añadir espacios vacíos al inicio
+            const firstDayOfWeek = getDayOfWeek(monthData.year, monthData.month, 1);
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                html += '<div class="day-card empty"></div>';
+            }
+            
+            // Añadir días del mes
+            for (let day = 1; day <= monthData.days; day++) {
+                const dateKey = `${monthData.year}-${String(monthData.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayOfWeek = getDayOfWeek(monthData.year, monthData.month, day);
+                const dayName = weekDays[dayOfWeek];
+                
+                html += `
+                    <div class="day-card" id="day-${dateKey}">
+                        <div class="day-number">${day}</div>
+                        <div class="day-name">${dayName}</div>
+                        <div class="status-badge available">Disponible</div>
+                        <div class="booking-info"></div>
+                        <button onclick="window.openBookingModal('${dateKey}', '${dayName} ${day} de ${monthData.name}')">Reservar</button>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            section.innerHTML = html;
+            container.appendChild(section);
+            
+            // Escuchar cambios en tiempo real para cada día
+            for (let day = 1; day <= monthData.days; day++) {
+                const dateKey = `${monthData.year}-${String(monthData.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const bookingRef = ref(database, 'bookings/' + dateKey);
+                onValue(bookingRef, (snapshot) => {
+                    const data = snapshot.val();
+                    updateDayCard(dateKey, data);
+                });
+            }
         }
 
         function updateDayCard(dateKey, booking) {
@@ -137,19 +158,25 @@
                 badge.className = 'status-badge reserved';
                 info.innerHTML = `<strong>${booking.userName}</strong><br>${booking.userEmail}`;
                 button.textContent = 'Cancelar';
-                button.onclick = () => cancelBooking(dateKey);
+                button.onclick = () => window.cancelBooking(dateKey);
             } else {
                 badge.textContent = 'Disponible';
                 badge.className = 'status-badge available';
                 info.innerHTML = '';
+                const parts = dateKey.split('-');
+                const day = parseInt(parts[2]);
+                const month = parseInt(parts[1]);
+                const monthData = months.find(m => m.month === month);
+                const dayOfWeek = getDayOfWeek(2026, month, day);
+                const dayName = weekDays[dayOfWeek];
                 button.textContent = 'Reservar';
-                button.onclick = () => openBookingModal(dateKey);
+                button.onclick = () => window.openBookingModal(dateKey, `${dayName} ${day} de ${monthData.name}`);
             }
         }
 
-        window.openBookingModal = function(dateKey) {
+        window.openBookingModal = function(dateKey, dateText) {
             selectedDate = dateKey;
-            document.getElementById('modal-date').textContent = `Fecha: ${dateKey}`;
+            document.getElementById('modal-date').textContent = `Fecha: ${dateText}`;
             document.getElementById('bookingModal').classList.add('active');
         };
 
@@ -175,10 +202,11 @@
                 timestamp: Date.now()
             });
 
-            closeModal();
+            window.closeModal();
         });
 
-        generateCalendars();
+        // Generar calendarios
+        months.forEach(month => generateCalendar(month));
     </script>
 </body>
 </html>
