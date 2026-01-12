@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tribunal Ricardo Acosta | Reservas 2026</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -83,20 +85,52 @@
     </div>
 
     <script>
-            // Sin Firebase - Solo localStorage
-    const db = null;}
+        // Configuración Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxVxGX4vH9LK3fmYmQZ8wN6Tj_rJ9Q4pE",
+            authDomain: "tribunal-reservas.firebaseapp.com",
+            projectId: "tribunal-reservas",
+            storageBucket: "tribunal-reservas.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123def456"
+        };
+        
+        // Inicializar Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) {
+            console.log("Firebase error:", e);
+            // Fallback a localStorage si Firebase falla
+            db = null;
+        }
         
         // Configuración EmailJS
         emailjs.init("xJL3bgd_OBFSrlC8V"); // Tu User ID de EmailJS
         
         let bookings = {};
         
-            // Cargar reservas desde localStorage
-    const loadBookings = () => {
-        bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
-        generateCalendars();
-    };
+        // Cargar reservas desde Firebase
+        const loadBookings = async () => {
+            if (db) {
+                try {
+                    const snapshot = await db.collection('bookings').get();
+                    bookings = {};
+                    snapshot.forEach(doc => {
+                        bookings[doc.id] = doc.data();
+                    });
+                } catch (e) {
+                    console.log("Error loading from Firebase, using localStorage");
+                    bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
+                }
+            } else {
+                bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
+            }
+            generateCalendars();
+        };
         
+        // Generar calendarios separados
         const generateCalendars = () => {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('mayoSection').style.display = 'block';
@@ -197,9 +231,18 @@
             const email = document.getElementById('email').value;
             const bookingData = { name, email, date: currentDate, time: "16:00" };
             
-        // Guardar en localStorage
-        bookings[currentDate] = bookingData;
-        localStorage.setItem('bookings', JSON.stringify(bookings));
+            // Guardar en Firebase
+            if (db) {
+                try {
+                    await db.collection('bookings').doc(currentDate).set(bookingData);
+                } catch (e) {
+                    console.log("Error saving to Firebase");
+                }
+            }
+            
+            // Guardar en localStorage como respaldo
+            bookings[currentDate] = bookingData;
+            localStorage.setItem('bookings', JSON.stringify(bookings));
             
             // Enviar email
             await sendEmail(bookingData);
@@ -209,6 +252,11 @@
             alert(`✅ Reserva confirmada para ${currentDate} a las 16:00\n\nSe ha enviado un email de confirmación.`);
         };
         
+        // Escuchar cambios en tiempo real
+        if (db) {
+            db.collection('bookings').onSnapshot(() => {
+                loadBookings();
+            });
         }
         
         // Inicializar
