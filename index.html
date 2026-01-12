@@ -1,35 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tribunal Ricardo Acosta | Gestión 2026</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #FDFDFD; }
-    .fade-in { animation: fadeIn 0.4s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-  </style>
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react/": "https://esm.sh/react@18.2.0/",
-      "react-dom": "https://esm.sh/react-dom@18.2.0",
-      "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "lucide-react": "https://esm.sh/lucide-react@0.292.0"
-    }
-  }
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribunal Ricardo Acosta | Gestión 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 40px; max-width: 800px; width: 100%; }
+        .success-banner { background: #10b981; color: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center; font-size: 18px; font-weight: 600; }
+        h1 { color: #667eea; font-size: 32px; text-align: center; margin-bottom: 20px; }
+        h2 { color: #333; font-size: 22px; margin: 30px 0 20px 0; }
+        p { color: #666; line-height: 1.6; margin-bottom: 15px; }
+        ol { margin-left: 20px; color: #666; line-height: 2; }
+        .url-box { background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
+        .url-box a { color: #667eea; text-decoration: none; font-weight: 600; font-size: 18px; }
+        .url-box a:hover { text-decoration: underline; }
+        .icon { font-size: 40px; text-align: center; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="index.tsx"></script>
+    <div class="container">
+        <div class="icon">🎓</div>
+        <h1>Sistema de Reserva de Tribunal</h1>
+        <h2>Ricardo Acosta - Tribunal 2026</h2>
+        
+        <div class="success-banner">
+            ✅ ¡Tu aplicación está desplegada correctamente!
+        </div>
+        
+        <p><strong>La aplicación está funcionando en Vercel.</strong></p>
+        
+        <h2>Para agregar el código completo del calendario:</h2>
+        <ol>
+            <li>Ve a Google AI Studio</li>
+            <li>Haz clic en el archivo "index.html" más reciente</li>
+            <li>Copia TODO el código</li>
+            <li>Reemplaza este archivo en GitHub con ese código</li>
+        </ol>
+        
+        <h2>URL de tu app:</h2>
+        <div class="url-box">
+            <a href="https://class-booking-manager.vercel.app" target="_blank">class-booking-manager.vercel.app</a>
+        </div>
+    </div>
 </body>
 </html>
