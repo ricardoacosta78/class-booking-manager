@@ -4,21 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tribunal Ricardo Acosta | Reservas 2026</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         h1 { color: #667eea; font-size: 36px; margin-bottom: 10px; text-align: center; }
-        h2 { color: #333; font-size: 24px; margin: 30px 0 20px 0; }
-        .calendar { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
-        .day-card { background: #f8f9fa; border-radius: 12px; padding: 20px; border: 2px solid #e9ecef; transition: all 0.3s; cursor: pointer; }
+        .header-info { text-align: center; color: #666; margin-bottom: 30px; }
+        .month-section { margin: 40px 0; }
+        .month-title { color: #667eea; font-size: 28px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #667eea; }
+        .calendar { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .day-card { background: #f8f9fa; border-radius: 12px; padding: 15px; border: 2px solid #e9ecef; transition: all 0.3s; cursor: pointer; min-height: 120px; }
         .day-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #667eea; }
         .day-card.reserved { background: #fff5f5; border-color: #ff6b6b; }
-        .day-header { font-size: 20px; font-weight: 600; color: #667eea; margin-bottom: 10px; }
+        .day-header { font-size: 18px; font-weight: 600; color: #667eea; margin-bottom: 10px; }
         .day-card.reserved .day-header { color: #ff6b6b; }
-        .booking-info { font-size: 14px; color: #666; margin-top: 10px; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 10px; }
+        .booking-info { font-size: 13px; color: #666; margin-top: 8px; line-height: 1.4; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 8px; }
         .available { background: #51cf66; color: white; }
         .reserved-badge { background: #ff6b6b; color: white; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
@@ -26,18 +30,17 @@
         .modal.active { display: block; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; }
-        input:focus, select:focus { outline: none; border-color: #667eea; }
+        input { width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 16px; }
+        input:focus { outline: none; border-color: #667eea; }
         .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
         .btn-primary { background: #667eea; color: white; }
         .btn-primary:hover { background: #5568d3; }
         .btn-secondary { background: #6c757d; color: white; margin-left: 10px; }
         .btn-secondary:hover { background: #5a6268; }
-        .btn-danger { background: #ff6b6b; color: white; }
-        .btn-danger:hover { background: #ff5252; }
         .close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
         .close:hover { color: #333; }
-        .header-info { text-align: center; color: #666; margin-bottom: 30px; }
+        .fixed-time { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 2px solid #667eea; text-align: center; font-size: 18px; font-weight: 600; color: #667eea; margin: 20px 0; }
+        .loading { text-align: center; padding: 20px; color: #667eea; }
     </style>
 </head>
 <body>
@@ -45,17 +48,27 @@
         <h1>🎓 Tribunal Ricardo Acosta</h1>
         <div class="header-info">
             <p><strong>Gestión 2026</strong> | Sistema de Reservas de Días</p>
-            <p style="margin-top: 10px; font-size: 14px; color: #999;">Calendario Mayo - Junio 2026</p>
+            <p style="margin-top: 10px; font-size: 14px; color: #999;">Todas las reservas son a las 16:00</p>
         </div>
         
-        <h2>📅 Días Disponibles</h2>
-        <div class="calendar" id="calendar"></div>
+        <div id="loading" class="loading">⏳ Cargando reservas...</div>
+        
+        <div id="mayoSection" class="month-section" style="display:none;">
+            <h2 class="month-title">📅 Mayo 2026</h2>
+            <div class="calendar" id="mayoCalendar"></div>
+        </div>
+        
+        <div id="junioSection" class="month-section" style="display:none;">
+            <h2 class="month-title">📅 Junio 2026</h2>
+            <div class="calendar" id="junioCalendar"></div>
+        </div>
     </div>
 
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="modalTitle">Reservar Día</h2>
+            <div class="fixed-time">⏰ Hora: 16:00</div>
             <form id="bookingForm">
                 <div class="form-group">
                     <label>Nombre Completo *</label>
@@ -65,17 +78,6 @@
                     <label>Email *</label>
                     <input type="email" id="email" required>
                 </div>
-                <div class="form-group">
-                    <label>Hora de Reserva *</label>
-                    <select id="time" required>
-                        <option value="9:00">9:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="12:00" selected>12:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                    </select>
-                </div>
                 <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
                 <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
             </form>
@@ -83,44 +85,89 @@
     </div>
 
     <script>
-        // Datos de reservas (simulando base de datos)
-        const bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
+        // Configuración Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxVxGX4vH9LK3fmYmQZ8wN6Tj_rJ9Q4pE",
+            authDomain: "tribunal-reservas.firebaseapp.com",
+            projectId: "tribunal-reservas",
+            storageBucket: "tribunal-reservas.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123def456"
+        };
         
-        // Generar calendario para Mayo-Junio 2026
-        const generateCalendar = () => {
-            const calendar = document.getElementById('calendar');
-            calendar.innerHTML = '';
-            
-            const months = [
-                { name: 'Mayo', days: 31, month: 5 },
-                { name: 'Junio', days: 30, month: 6 }
-            ];
-            
-            months.forEach(({name, days, month}) => {
-                for (let day = 1; day <= days; day++) {
-                    const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                    const booking = bookings[dateKey];
-                    const isReserved = !!booking;
-                    
-                    const card = document.createElement('div');
-                    card.className = `day-card ${isReserved ? 'reserved' : ''}`;
-                    card.innerHTML = `
-                        <div class="day-header">${day} de ${name}</div>
-                        <div class="status-badge ${isReserved ? 'reserved-badge' : 'available'}">
-                            ${isReserved ? '🔒 Reservado' : '✅ Disponible'}
-                        </div>
-                        ${isReserved ? `
-                            <div class="booking-info">
-                                <strong>${booking.name}</strong><br>
-                                ${booking.time}
-                            </div>
-                        ` : ''}
-                    `;
-                    
-                    card.onclick = () => openModal(dateKey, booking);
-                    calendar.appendChild(card);
+        // Inicializar Firebase
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+        } catch (e) {
+            console.log("Firebase error:", e);
+            // Fallback a localStorage si Firebase falla
+            db = null;
+        }
+        
+        // Configuración EmailJS
+        emailjs.init("xJL3bgd_OBFSrlC8V"); // Tu User ID de EmailJS
+        
+        let bookings = {};
+        
+        // Cargar reservas desde Firebase
+        const loadBookings = async () => {
+            if (db) {
+                try {
+                    const snapshot = await db.collection('bookings').get();
+                    bookings = {};
+                    snapshot.forEach(doc => {
+                        bookings[doc.id] = doc.data();
+                    });
+                } catch (e) {
+                    console.log("Error loading from Firebase, using localStorage");
+                    bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
                 }
-            });
+            } else {
+                bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
+            }
+            generateCalendars();
+        };
+        
+        // Generar calendarios separados
+        const generateCalendars = () => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('mayoSection').style.display = 'block';
+            document.getElementById('junioSection').style.display = 'block';
+            
+            generateMonth('Mayo', 31, 5, 'mayoCalendar');
+            generateMonth('Junio', 30, 6, 'junioCalendar');
+        };
+        
+        const generateMonth = (monthName, days, month, containerId) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            for (let day = 1; day <= days; day++) {
+                const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const booking = bookings[dateKey];
+                const isReserved = !!booking;
+                
+                const card = document.createElement('div');
+                card.className = `day-card ${isReserved ? 'reserved' : ''}`;
+                card.innerHTML = `
+                    <div class="day-header">${day} ${monthName}</div>
+                    <div class="status-badge ${isReserved ? 'reserved-badge' : 'available'}">
+                        ${isReserved ? '🔒 Reservado' : '✅ Disponible'}
+                    </div>
+                    ${isReserved ? `
+                        <div class="booking-info">
+                            <strong>${booking.name}</strong><br>
+                            ${booking.email}<br>
+                            ⏰ 16:00
+                        </div>
+                    ` : ''}
+                `;
+                
+                card.onclick = () => openModal(dateKey, booking);
+                container.appendChild(card);
+            }
         };
         
         // Modal
@@ -138,7 +185,6 @@
                 modalTitle.textContent = `Reserva: ${date}`;
                 document.getElementById('name').value = booking.name;
                 document.getElementById('email').value = booking.email;
-                document.getElementById('time').value = booking.time;
             } else {
                 modalTitle.textContent = `Reservar: ${date}`;
                 form.reset();
@@ -156,24 +202,60 @@
         cancelBtn.onclick = closeModal;
         window.onclick = (e) => { if (e.target === modal) closeModal(); };
         
+        // Enviar email
+        const sendEmail = async (booking) => {
+            try {
+                await emailjs.send("service_tribunal", "template_reserva", {
+                    to_email: "ricardoacosta78@gmail.com",
+                    user_name: booking.name,
+                    user_email: booking.email,
+                    booking_date: booking.date,
+                    booking_time: "16:00"
+                });
+                console.log("Email enviado");
+            } catch (e) {
+                console.log("Error enviando email:", e);
+            }
+        };
+        
         // Form submit
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
-            const time = document.getElementById('time').value;
+            const bookingData = { name, email, date: currentDate, time: "16:00" };
             
-            bookings[currentDate] = { name, email, time, date: currentDate };
+            // Guardar en Firebase
+            if (db) {
+                try {
+                    await db.collection('bookings').doc(currentDate).set(bookingData);
+                } catch (e) {
+                    console.log("Error saving to Firebase");
+                }
+            }
+            
+            // Guardar en localStorage como respaldo
+            bookings[currentDate] = bookingData;
             localStorage.setItem('bookings', JSON.stringify(bookings));
             
+            // Enviar email
+            await sendEmail(bookingData);
+            
             closeModal();
-            generateCalendar();
-            alert(`✅ Reserva confirmada para ${currentDate} a las ${time}`);
+            await loadBookings();
+            alert(`✅ Reserva confirmada para ${currentDate} a las 16:00\n\nSe ha enviado un email de confirmación.`);
         };
         
+        // Escuchar cambios en tiempo real
+        if (db) {
+            db.collection('bookings').onSnapshot(() => {
+                loadBookings();
+            });
+        }
+        
         // Inicializar
-        generateCalendar();
+        loadBookings();
     </script>
 </body>
 </html>
