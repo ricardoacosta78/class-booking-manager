@@ -127,7 +127,7 @@
             } else {
                 bookings = JSON.parse(localStorage.getItem('bookings') || '{}');
             }
-            generateCalendars();
+  let db = null;  // Deshabilitado Firebase, usando solo localStorage          generateCalendars();
         };
         
         // Generar calendarios separados
