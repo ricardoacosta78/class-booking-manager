@@ -131,8 +131,7 @@
                 const tribunalClass = isTribunalDay ? ' tribunal' : '';
                 
                 html += `
-                    <div class="day-card"${tribunalClass}
-                        <div class="day-number">${day}</div>
+                    <div class="day-card${tribunalClass}" id="day-${dateKey}">                        <div class="day-number">${day}</div>
                         <div class="day-name">${dayName}</div>
                         <div class="status-badge available">Disponible</div>
                         <div class="booking-info"></div>
