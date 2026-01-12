@@ -22,6 +22,9 @@
         .day-name { font-size: 12px; color: #999; margin-bottom: 10px; }
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 10px; }
         .available { background: #51cf66; color: white; }
+                .day-card.tribunal { background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%); border: 3px solid #ff6b6b; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
+        .day-card.tribunal .day-number { color: #fff; font-weight: 700; }
+        .day-card.tribunal .day-name { color: #ffe4b5; }
         .reserved { background: #ff6b6b; color: white; }
         .booking-info { font-size: 11px; color: #666; margin: 8px 0; }
         button { background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; width: 100%; }
@@ -86,6 +89,10 @@
             { name: 'Mayo', month: 5, year: 2026, days: 31 },
             { name: 'Junio', month: 6, year: 2026, days: 30 }
         ];
+                const tribunalDays = {
+            5: [13, 14, 20, 21, 27, 28],  // Mayo: días 13,14,20,21,27,28
+            6: [3, 4, 10, 11, 17, 18]      // Junio: días 3,4,10,11,17,18
+        };
 
         function getDayOfWeek(year, month, day) {
             return new Date(year, month - 1, day).getDay();
@@ -118,9 +125,13 @@
                 const dateKey = `${monthData.year}-${String(monthData.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayOfWeek = getDayOfWeek(monthData.year, monthData.month, day);
                 const dayName = weekDays[dayOfWeek];
+
+                                // Verificar si es día del tribunal
+                const isTribunalDay = tribunalDays[monthData.month] && tribunalDays[monthData.month].includes(day);
+                const tribunalClass = isTribunalDay ? ' tribunal' : '';
                 
                 html += `
-                    <div class="day-card" id="day-${dateKey}">
+                    <div class="day-card"${tribunalClass}
                         <div class="day-number">${day}</div>
                         <div class="day-name">${dayName}</div>
                         <div class="status-badge available">Disponible</div>
