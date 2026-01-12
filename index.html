@@ -148,14 +148,19 @@
                 const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                 const booking = bookings[dateKey];
                 const isReserved = !!booking;
+
+                            // Días prioritarios para reservar
+            const priorityDays = {
+                5: [13,14,20,21,27,28],  // Mayo
+                6: [3,4,10,11,17,18]     // Junio
+            };
+            const isPriority = priorityDays[month] && priorityDays[month].includes(day);
                 
                 const card = document.createElement('div');
-                card.className = `day-card ${isReserved ? 'reserved' : ''}`;
                 card.innerHTML = `
                     <div class="day-header">${day} ${monthName}</div>
                     <div class="status-badge ${isReserved ? 'reserved-badge' : 'available'}">
-                        ${isReserved ? '🔒 Reservado' : '✅ Disponible'}
-                    </div>
+            card.className = `day-card ${isReserved ? 'reserved' : ''} ${isPriority ? 'priority-day' : ''}`;                    </div>
                     ${isReserved ? `
                         <div class="booking-info">
                             <strong>${booking.name}</strong><br>
